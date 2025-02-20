@@ -18,12 +18,23 @@ const createEntry = async (req, res) => {
 
 const getEntries = async (req, res) => {
     try {
-        const entries = await Entry.find({ userId: req.user.userId });
+        const entries = await Entry.find();
         res.json(entries);
     } catch (error) {
         res.status(500).json({ error: error.message });
     }
 };
+
+const getUserEntries = async (req, res) =>{
+    try{
+        const userId = req.user.userId;
+        const entries = await Entry.find({userId: userId})
+        console.log(userId)
+        res.json(entries)
+    }catch(error){
+        res.status(500).json({error: error.message})
+    }
+}
 
 const getEntryById = async (req, res) => {
     try {
@@ -54,6 +65,7 @@ const updateEntry = async (req, res) => {
 const deleteEntry = async (req, res) => {
     try {
         const entry = await Entry.findById(req.params.id);
+        console.log(entry)
         if (!entry || entry.userId.toString() !== req.user.userId) {
             return res.status(404).json({ message: "Entry not found" });
         }
@@ -64,4 +76,4 @@ const deleteEntry = async (req, res) => {
     }
 };
 
-module.exports = { createEntry, getEntries, getEntryById, updateEntry, deleteEntry };
+module.exports = { createEntry, getEntries, getEntryById, updateEntry, deleteEntry, getUserEntries };
