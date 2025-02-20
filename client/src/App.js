@@ -7,6 +7,7 @@ import Register from './pages/Register';
 import Dashboard from './pages/Dashboard';
 import Entries from './pages/Entries';
 import Admin from './pages/Admin';
+import AdminRoute from './components/AdminRoute';
 
 function App() {
   return (
@@ -19,7 +20,14 @@ function App() {
           <Route path="/register" element={<Register />} />
           <Route path="/dashboard" element={<Dashboard />} />
           <Route path="/entries" element={<Entries />} />
-          <Route path="/admin" element={<Admin />} />
+          <Route 
+            path="/admin" 
+            element={
+              <AdminRoute>
+                <Admin />
+              </AdminRoute>
+            } 
+          />
         </Routes>
       </div>
     </Router>

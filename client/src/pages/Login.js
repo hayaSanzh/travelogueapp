@@ -15,7 +15,8 @@ function Login() {
         password
       });
       localStorage.setItem('token', response.data.token);
-      localStorage.setItem('isAdmin', response.data.isAdmin || false);
+      localStorage.setItem('role', response.data.role);
+      localStorage.setItem('userId', response.data.userId);
       navigate('/dashboard');
     } catch (error) {
       console.error('Login error:', error.response?.data || error.message);
