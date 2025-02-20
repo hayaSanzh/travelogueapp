@@ -5,11 +5,11 @@ function Navbar() {
   const navigate = useNavigate();
   const location = useLocation();
   const token = localStorage.getItem('token');
-  const isAdmin = localStorage.getItem('isAdmin') === 'true';
+  const isAdmin = localStorage.getItem('role') === 'admin';
 
   const handleLogout = () => {
     localStorage.removeItem('token');
-    localStorage.removeItem('isAdmin');
+    localStorage.removeItem('role');
     navigate('/login');
   };
 

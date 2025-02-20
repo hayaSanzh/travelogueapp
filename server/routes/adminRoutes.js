@@ -1,11 +1,15 @@
 const express = require('express')
-const {getAllUserProfile, updateUserProfile, getAdminStatus} = require('../controllers/adminController')
-const {protect,adminMiddleware} = require("../middleware/authMiddleware")
+const {getUsers, deleteUser, getStats} = require('../controllers/adminController')
+const {protect,admin} = require("../middleware/authMiddleware")
 
 const router = express.Router()
 
-router.get("/profiles", protect, adminMiddleware, getAllUserProfile)
-router.put("/profiles/:id", protect, adminMiddleware, updateUserProfile)
-router.get("/status", protect, getAdminStatus)
+router.get("/verify", protect, admin, (req, res) => {
+  res.json({ isAdmin: true })
+})
+
+router.get("/users", protect, admin, getUsers)
+router.delete("/users/:id", protect, admin, deleteUser)
+router.get("/stats", protect, admin, getStats)
 
 module.exports = router
