@@ -5,7 +5,7 @@ const entrySchema = new mongoose.Schema({
   description: { type: String, required: true },
   travelDate: { type: Date, required: true },
   location: { type: String, required: true },
-  userId: { type: mongoose.Schema.Types.ObjectId, ref: "User", required: true },
+  user: { type: mongoose.Schema.Types.ObjectId, ref: "User", required: true },
 }, { timestamps: true });
 
 module.exports = mongoose.model("Entry", entrySchema);

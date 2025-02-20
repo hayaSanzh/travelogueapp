@@ -1,41 +1,49 @@
 import React, { useState, useEffect } from 'react';
 import { adminService } from '../services/adminService';
+import LoadingSpinner from '../components/LoadingSpinner';
+import { useNavigate } from 'react-router-dom';
 
 function Admin() {
   const [users, setUsers] = useState([]);
   const [stats, setStats] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const navigate = useNavigate();
 
   useEffect(() => {
-    fetchData();
-  }, []);
+    const fetchData = async () => {
+      try {
+        setLoading(true);
+        const [usersResponse, statsResponse] = await Promise.all([
+          adminService.getAllUsers(),
+          adminService.getStats()
+        ]);
+        setUsers(usersResponse.data);
+        setStats(statsResponse.data);
+      } catch (err) {
+        setError(err.response?.data?.message || 'Failed to fetch admin data');
+        if (err.response?.status === 401) {
+          localStorage.removeItem('role');
+          navigate('/login');
+        }
+      } finally {
+        setLoading(false);
+      }
+    };
 
-  const fetchData = async () => {
-    try {
-      const [usersResponse, statsResponse] = await Promise.all([
-        adminService.getAllUsers(),
-        adminService.getStats()
-      ]);
-      setUsers(usersResponse.data);
-      setStats(statsResponse.data);
-      setLoading(false);
-    } catch (err) {
-      setError('Failed to fetch admin data');
-      setLoading(false);
-    }
-  };
+    fetchData();
+  }, [navigate]);
 
   const handleDeleteUser = async (userId) => {
     try {
       await adminService.deleteUser(userId);
-      fetchData();
+      setUsers(users.filter(user => user._id !== userId));
     } catch (err) {
-      setError('Failed to delete user');
+      setError(err.response?.data?.message || 'Failed to delete user');
     }
   };
 
-  if (loading) return <div>Loading...</div>;
+  if (loading) return <LoadingSpinner />;
   if (error) return <div className="alert alert-error">{error}</div>;
 
   return (
@@ -77,6 +85,7 @@ function Admin() {
                   <button 
                     onClick={() => handleDeleteUser(user._id)}
                     className="delete-btn"
+                    disabled={user._id === localStorage.getItem('userId')}
                   >
                     Delete
                   </button>

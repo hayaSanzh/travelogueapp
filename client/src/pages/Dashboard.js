@@ -47,13 +47,23 @@ function Dashboard() {
     e.preventDefault();
     setIsSubmitting(true);
     try {
-      await entryService.createEntry(newEntry);
-      setNewEntry({ title: '', description: '', travelDate: '', location: '' });
+      const formattedEntry = {
+        ...newEntry,
+        travelDate: new Date(newEntry.travelDate).toISOString()
+      };
+
+      await entryService.createEntry(formattedEntry);
+      setNewEntry({ 
+        title: '', 
+        description: '', 
+        travelDate: '', 
+        location: '' 
+      });
       const response = await entryService.getUserEntries();
       setEntries(response.data);
       setError(null);
     } catch (err) {
-      setError('Failed to create entry');
+      setError(err.response?.data?.message || 'Failed to create entry');
     } finally {
       setIsSubmitting(false);
     }
@@ -71,6 +81,7 @@ function Dashboard() {
 
   if (loading) return <LoadingSpinner />;
   if (error) return <div className="alert alert-error">{error}</div>;
+  if (!userData) return <div className="alert alert-error">Unable to load user data</div>;
 
   return (
     <div className="dashboard">
@@ -90,15 +101,16 @@ function Dashboard() {
               value={newEntry.title}
               onChange={(e) => setNewEntry({ ...newEntry, title: e.target.value })}
               required
+              minLength="3"
             />
           </div>
           <div>
             <label>Description:</label>
-            <input
-              type="text"
+            <textarea
               value={newEntry.description}
               onChange={(e) => setNewEntry({ ...newEntry, description: e.target.value })}
               required
+              minLength="10"
             />
           </div>
           <div>
@@ -117,6 +129,7 @@ function Dashboard() {
               value={newEntry.location}
               onChange={(e) => setNewEntry({ ...newEntry, location: e.target.value })}
               required
+              minLength="2"
             />
           </div>
           <button type="submit" disabled={isSubmitting}>

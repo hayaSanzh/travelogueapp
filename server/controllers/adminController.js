@@ -1,44 +1,50 @@
 const User = require("../models/User")
+const Entry = require("../models/Entry")
 
-const getAllUserProfile = async (req , res) =>{
-    try{
-        const users= await User.find()
-        res.json(users)
-    } catch (error){
-        res.status(500).json({error: error.message})
-    }
-}
-
-const updateUserProfile = async (req, res) => {
+const getUsers = async (req, res) => {
     try {
-        const user = await User.findById(req.user.userId);
-        if (!user) return res.status(404).json({ message: "User not found" });
-
-        user.username = req.body.username || user.username;
-        user.email = req.body.email || user.email;
-
-        if (req.body.password) {
-            user.password = req.body.password;
-        }
-
-        await user.save();
-        res.json({ message: "Profile updated successfully" });
+        const users = await User.find({}).select('-password');
+        res.json(users);
     } catch (error) {
-        res.status(500).json({ error: error.message });
-    }
-};
-
-const getAdminStatus = async (req ,res)=>{
-    try{
-        const isAdmin = await User.findById(req.user.userId)
-        if(isAdmin.role==='admin'){
-            res.json({isAdmin: false})
-        }else{
-            res.json({isAdmin: true})
-        }
-    }catch(error){
-        error.status(500).json({error: error.message})
+        res.status(500).json({ message: 'Error fetching users' });
     }
 }
 
-module.exports = {getAllUserProfile, updateUserProfile, getAdminStatus}
+const deleteUser = async (req, res) => {
+    try {
+        const user = await User.findById(req.params.id);
+        if (!user) {
+            return res.status(404).json({ message: 'User not found' });
+        }
+
+        if (user._id.toString() === req.user._id.toString()) {
+            return res.status(400).json({ message: 'Cannot delete own admin account' });
+        }
+
+        await User.findByIdAndDelete(req.params.id);
+        res.json({ message: 'User removed' });
+    } catch (error) {
+        res.status(500).json({ message: error.message });
+    }
+}
+
+
+const getStats = async (req, res) => {
+    try {
+        const totalUsers = await User.countDocuments();
+        const totalEntries = await Entry.countDocuments();
+        
+        res.json({
+            totalUsers,
+            totalEntries
+        });
+    } catch (error) {
+        res.status(500).json({ message: 'Error fetching statistics' });
+    }
+}
+
+module.exports = {
+    getUsers,
+    deleteUser,
+    getStats
+}
