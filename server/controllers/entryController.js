@@ -54,13 +54,14 @@ const getEntryById = async (req, res) => {
 const updateEntry = async (req, res) => {
     try {
         const entry = await Entry.findById(req.params.id);
-        if (!entry || entry.user.toString() !== req.user._id.toString()) {
+        if (!entry || entry.user.toString() !== req.user.userId) {
             return res.status(404).json({ message: "Entry not found" });
         }
         Object.assign(entry, req.body);
         await entry.save();
         res.json(entry);
     } catch (error) {
+        console.log(error);
         res.status(500).json({ error: error.message });
     }
 };
@@ -68,7 +69,7 @@ const updateEntry = async (req, res) => {
 const deleteEntry = async (req, res) => {
     try {
         const entry = await Entry.findById(req.params.id);
-        if (!entry || entry.user.toString() !== req.user._id.toString()) {
+        if (!entry || entry.user.toString() !== req.user.userId) {
             return res.status(404).json({ message: "Entry not found" });
         }
         await entry.deleteOne();
