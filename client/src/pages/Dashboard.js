@@ -11,6 +11,9 @@ function Dashboard() {
   const [error, setError] = useState(null);
   const [newEntry, setNewEntry] = useState({ title: '', description: '', travelDate: '', location: '' });
   const [isSubmitting, setIsSubmitting] = useState(false);
+  // Состояние для редактируемой записи (если null, окно не отображается)
+  const [editingEntry, setEditingEntry] = useState(null);
+
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -53,12 +56,7 @@ function Dashboard() {
       };
 
       await entryService.createEntry(formattedEntry);
-      setNewEntry({ 
-        title: '', 
-        description: '', 
-        travelDate: '', 
-        location: '' 
-      });
+      setNewEntry({ title: '', description: '', travelDate: '', location: '' });
       const response = await entryService.getUserEntries();
       setEntries(response.data);
       setError(null);
@@ -76,6 +74,35 @@ function Dashboard() {
       setEntries(response.data);
     } catch (err) {
       setError('Failed to delete entry');
+    }
+  };
+
+  // Открываем окно редактирования с предзаполненными данными записи.
+  const handleUpdate = (entry) => {
+    const travelDateFormatted = entry.travelDate ? entry.travelDate.split('T')[0] : '';
+    setEditingEntry({ ...entry, travelDate: travelDateFormatted });
+  };
+
+  // Обработка изменений в форме редактирования.
+  const handleEditingChange = (e) => {
+    setEditingEntry({ ...editingEntry, [e.target.name]: e.target.value });
+  };
+
+  // Отправка обновлённой записи.
+  const handleEditSubmit = async (e) => {
+    e.preventDefault();
+    try {
+      const updatedData = {
+        ...editingEntry,
+        travelDate: new Date(editingEntry.travelDate).toISOString()
+      };
+      await entryService.updateEntry(editingEntry._id, updatedData);
+      const response = await entryService.getUserEntries();
+      setEntries(response.data);
+      setEditingEntry(null); // Закрываем окно после обновления
+      setError(null);
+    } catch (err) {
+      setError(err.response?.data?.message || 'Failed to update entry');
     }
   };
 
@@ -143,17 +170,105 @@ function Dashboard() {
             <div key={entry._id} className="entry-card">
               <h3>{entry.title}</h3>
               <p><strong>Description:</strong> {entry.description}</p>
-              <p><strong>Travel Date:</strong> {new Date(entry.travelDate).toLocaleDateString()}</p>
+              <p>
+                <strong>Travel Date:</strong> {new Date(entry.travelDate).toLocaleDateString()}
+              </p>
               <p><strong>Location:</strong> {entry.location}</p>
               <div className="entry-actions">
+                <button onClick={() => handleUpdate(entry)}>Update</button>
                 <button onClick={() => handleDelete(entry._id)}>Delete</button>
               </div>
             </div>
           ))}
         </div>
       </div>
+
+      {/* Модальное окно для редактирования, отображается по центру экрана */}
+      {editingEntry && (
+        <div
+          className="modal"
+          style={{
+            position: 'fixed',
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            background: 'rgba(0,0,0,0.5)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            zIndex: 1000
+          }}
+        >
+          <div
+            className="modal-content"
+            style={{
+              background: '#fff',
+              padding: '20px',
+              borderRadius: '5px',
+              width: '500px',
+              maxWidth: '90%',
+              boxShadow: '0 2px 10px rgba(0, 0, 0, 0.1)'
+            }}
+          >
+            <h3>Edit Entry</h3>
+            <form onSubmit={handleEditSubmit}>
+              <div>
+                <label>Title:</label>
+                <input
+                  type="text"
+                  name="title"
+                  value={editingEntry.title}
+                  onChange={handleEditingChange}
+                  required
+                  minLength="3"
+                />
+              </div>
+              <div>
+                <label>Description:</label>
+                <textarea
+                  name="description"
+                  value={editingEntry.description}
+                  onChange={handleEditingChange}
+                  required
+                  minLength="10"
+                  rows="5"
+                  cols="45"
+                />
+              </div>
+              <div>
+                <label>Travel Date:</label>
+                <input
+                  type="date"
+                  name="travelDate"
+                  value={editingEntry.travelDate}
+                  onChange={handleEditingChange}
+                  required
+                />
+              </div>
+              <div>
+                <label>Location:</label>
+                <input
+                  type="text"
+                  name="location"
+                  value={editingEntry.location}
+                  onChange={handleEditingChange}
+                  required
+                  minLength="2"
+                />
+              </div>
+              <div style={{ marginTop: '10px' }}>
+                <button type="submit">Update Entry</button>
+                <button type="button" onClick={() => setEditingEntry(null)} style={{ marginLeft: '10px' }}>
+                  Cancel
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
 
-export default Dashboard; 
+export default Dashboard;
