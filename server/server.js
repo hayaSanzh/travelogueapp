@@ -2,6 +2,7 @@ require("dotenv").config();
 const cors = require("cors");
 const express = require("express");
 const connectDB = require("./config/db");
+const path = require("path")
 const authRoutes = require("./routes/authRoutes");
 const userRoutes = require("./routes/userRoutes");
 const entryRoutes = require("./routes/entryRoutes");
@@ -20,6 +21,11 @@ app.use("/api/auth", authRoutes);
 app.use("/api/users", userRoutes);
 app.use("/api/entries", entryRoutes);
 app.use("/api/admin", adminRoutes)
+
+app.use(express.static(path.join(__dirname, '../client/build')));
+app.get('*', (req, res) => {
+    res.sendFile(path.join(__dirname, '../client/build', 'index.html'));
+});
 
 
 app.use(errorHandler);
