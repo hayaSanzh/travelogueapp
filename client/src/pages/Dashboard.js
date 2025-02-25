@@ -11,7 +11,6 @@ function Dashboard() {
   const [error, setError] = useState(null);
   const [newEntry, setNewEntry] = useState({ title: '', description: '', travelDate: '', location: '' });
   const [isSubmitting, setIsSubmitting] = useState(false);
-  // Состояние для редактируемой записи (если null, окно не отображается)
   const [editingEntry, setEditingEntry] = useState(null);
 
   const navigate = useNavigate();
@@ -77,18 +76,15 @@ function Dashboard() {
     }
   };
 
-  // Открываем окно редактирования с предзаполненными данными записи.
   const handleUpdate = (entry) => {
     const travelDateFormatted = entry.travelDate ? entry.travelDate.split('T')[0] : '';
     setEditingEntry({ ...entry, travelDate: travelDateFormatted });
   };
 
-  // Обработка изменений в форме редактирования.
   const handleEditingChange = (e) => {
     setEditingEntry({ ...editingEntry, [e.target.name]: e.target.value });
   };
 
-  // Отправка обновлённой записи.
   const handleEditSubmit = async (e) => {
     e.preventDefault();
     try {
@@ -99,7 +95,7 @@ function Dashboard() {
       await entryService.updateEntry(editingEntry._id, updatedData);
       const response = await entryService.getUserEntries();
       setEntries(response.data);
-      setEditingEntry(null); // Закрываем окно после обновления
+      setEditingEntry(null);
       setError(null);
     } catch (err) {
       setError(err.response?.data?.message || 'Failed to update entry');
@@ -183,7 +179,6 @@ function Dashboard() {
         </div>
       </div>
 
-      {/* Модальное окно для редактирования, отображается по центру экрана */}
       {editingEntry && (
         <div
           className="modal"
