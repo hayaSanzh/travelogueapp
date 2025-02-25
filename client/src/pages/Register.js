@@ -25,7 +25,6 @@ function Register() {
     setError('');
     setLoading(true);
 
-    // Validate passwords match
     if (formData.password !== formData.confirmPassword) {
       setError('Passwords do not match');
       setLoading(false);
@@ -40,7 +39,6 @@ function Register() {
       });
 
       if (response.data.message) {
-        // Registration successful
         navigate('/login');
       }
     } catch (error) {
