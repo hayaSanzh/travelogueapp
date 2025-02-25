@@ -1,6 +1,5 @@
 import axios from 'axios';
 
-
 const API_URL = 'https://travelogueapp-vlt7.onrender.com/api';
 
 const api = axios.create({
